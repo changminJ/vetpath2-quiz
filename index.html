@@ -80,6 +80,7 @@
   .pill-multi{background:var(--c-multi);color:#0d1320}
   .pill-jokbo{background:var(--c-jokbo);color:#0d1320}
   .pill-photo{background:#7ee0c0;color:#0d1320}
+  .pill-fusion{background:#ffd54f;color:#0d1320}
   .qno{color:var(--text-subdued);font-size:12px;font-weight:700;margin-left:auto}
   .qtext{font-size:17.5px;font-weight:700;line-height:1.45;margin-bottom:18px;white-space:pre-wrap}
   .multi-note{color:var(--c-multi);font-weight:700;font-size:13px;margin:-6px 0 14px}
@@ -196,6 +197,7 @@ const FILTERS=[
   ['족보 기출','var(--c-jokbo)',q=>q.source==='족보'],
   ['사진문제','#7ee0c0',q=>!!q.img],
   ['모두고르시오','var(--c-multi)',q=>q.type==='multi'],
+  ['🔗 융합형','#ffd54f',q=>q.fusion===true],
   ['오답만','#f15e6c',q=>{const s=ST.ans[q.id];return s&&s.checked&&!s.correct;}],
 ];
 const LS='pathoQuizV3';
@@ -237,6 +239,7 @@ function renderMain(){
   const pct=Math.round((pos+1)/list.length*100);
   let pills=`<span class="pill" style="background:var(--c-${q.part});color:#0d1320">${q.part}</span>`;
   if(q.source==='족보')pills+=`<span class="pill pill-jokbo">족보 ${esc(q.exam||'')}</span>`;
+  if(q.fusion)pills+=`<span class="pill pill-fusion">🔗 융합형</span>`;
   if(q.type==='multi')pills+=`<span class="pill pill-multi">모두 고르시오</span>`;
   if(q.img)pills+=`<span class="pill pill-photo">📷 사진</span>`;
   if(q.topic)pills+=`<span class="pill pill-tag">${esc(q.topic)}</span>`;
