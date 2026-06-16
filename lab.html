@@ -131,8 +131,8 @@
   <div class="sidebar-backdrop" id="backdrop" onclick="toggleSidebar()"></div>
   <aside class="sidebar" id="sidebar">
     <div class="logo"><div class="logo-icon">🔬</div>
-      <div><div class="logo-text">병리실습2 퀴즈</div><div class="logo-sub">사진 8 + 개념 18 · 주관식</div></div></div>
-    <div class="user-info"><span class="user-name">8 사진문제(서브포함)·키워드 주관식</span>
+      <div><div class="logo-text">병리실습2 퀴즈</div><div class="logo-sub">사진 116 + 개념 18 · 주관식</div></div></div>
+    <div class="user-info"><span class="user-name">면역세포·케이스·사진판독 / 탭하면 정답</span>
       <button class="icon-btn" id="themeBtn" onclick="toggleTheme()">🌙</button></div>
     <div class="sidebar-section"><h3>구성 (개념 → 사진)</h3><nav class="nav-list" id="nav"></nav></div>
     <div class="stats-card">
@@ -157,25 +157,34 @@ let ST=load(); function load(){try{const j=JSON.parse(localStorage.getItem(LS));
 function save(){localStorage.setItem(LS,JSON.stringify(ST));}
 // flat item list: concept items then case items
 const ITEMS=[...LAB.concept.map(c=>({type:'concept',data:c})), ...LAB.cases.map(c=>({type:'case',data:c}))];
-let cur=0, filterBm=false;
+let cur=0, flt='all';
 function ikey(it){return it.data.id;}
-function view(){return filterBm?ITEMS.filter(it=>ST.bookmarks[ikey(it)]):ITEMS;}
+function view(){
+  if(flt==='all')return ITEMS;
+  if(flt==='concept')return ITEMS.filter(it=>it.type==='concept');
+  if(flt==='bookmark')return ITEMS.filter(it=>ST.bookmarks[ikey(it)]);
+  return ITEMS.filter(it=>it.type==='case'&&it.data.group===flt);
+}
 function applyTheme(){document.documentElement.setAttribute('data-theme',ST.theme);document.getElementById('themeBtn').textContent=ST.theme==='dark'?'🌙':'☀️';}
 function esc(s){return(s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function md(s){return esc(s).replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');}
 function nConcept(){return LAB.concept.length;}
 function renderNav(){
   const nav=document.getElementById('nav');nav.innerHTML='';
-  const bmCount=ITEMS.filter(it=>ST.bookmarks[ikey(it)]).length;
+  const cc=ITEMS.filter(it=>it.type==='concept').length;
+  const g=(name)=>ITEMS.filter(it=>it.type==='case'&&it.data.group===name).length;
+  const bm=ITEMS.filter(it=>ST.bookmarks[ikey(it)]).length;
   const groups=[
-    ['개념문제',()=>{filterBm=false;cur=0;},'var(--c-concept)',nConcept(),!filterBm&&cur<nConcept()],
-    ['사진문제',()=>{filterBm=false;cur=nConcept();},'var(--c-photo)',LAB.cases.length,!filterBm&&cur>=nConcept()],
-    ['🔖 북마크',()=>{filterBm=true;cur=0;},'#ff9e64',bmCount,filterBm],
+    ['개념문제','concept','var(--c-concept)',cc],
+    ['🔬 면역세포 식별','면역세포','#ffd54f',g('면역세포')],
+    ['📋 케이스 판독','케이스','var(--c-photo)',g('케이스')],
+    ['📷 사진 판독','사진','#7dc3ff',g('사진')],
+    ['🔖 북마크','bookmark','#ff9e64',bm],
   ];
-  groups.forEach(([name,act,col,cnt,active])=>{
-    const b=document.createElement('button');b.className='nav-item'+(active?' active':'');
-    b.innerHTML=`<span style="display:flex;align-items:center"><span class="nav-dot" style="background:${col}"></span>${name}</span><span class="count">${cnt}</span>`;
-    b.onclick=()=>{act();render();if(window.innerWidth<=768)toggleSidebar(true);};
+  groups.forEach(([name,mode,col,n])=>{
+    const b=document.createElement('button');b.className='nav-item'+(flt===mode?' active':'');
+    b.innerHTML=`<span style="display:flex;align-items:center"><span class="nav-dot" style="background:${col}"></span>${name}</span><span class="count">${n}</span>`;
+    b.onclick=()=>{flt=mode;cur=0;render();if(window.innerWidth<=768)toggleSidebar(true);};
     nav.appendChild(b);
   });
   const marks=Object.values(ST.marks);
@@ -192,7 +201,7 @@ function revealBlock(key,a,explain){
 function render(){
   applyTheme();renderNav();
   const list=view();const main=document.getElementById('main');
-  if(!list.length){main.innerHTML='<div class="card" style="text-align:center;color:var(--text-muted);padding:50px">🔖 북마크한 문항이 없습니다.<br>문항의 🔖 버튼을 눌러 표시하세요.</div>';renderPlayer();return;}
+  if(!list.length){main.innerHTML='<div class="card" style="text-align:center;color:var(--text-muted);padding:50px">해당 문항이 없습니다.<br>(북마크는 문항의 🔖 버튼으로 추가)</div>';renderPlayer();return;}
   if(cur>=list.length)cur=list.length-1; if(cur<0)cur=0;
   const it=list[cur];
   const pct=Math.round((cur+1)/list.length*100);
