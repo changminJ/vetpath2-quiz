@@ -77,6 +77,9 @@
   .stem{font-size:14.5px;color:var(--text-muted);line-height:1.6;margin-bottom:14px;white-space:pre-wrap;
     background:var(--explanation-bg);border-left:3px solid var(--accent);padding:12px 14px;border-radius:8px}
   .qtext{font-size:17px;font-weight:700;line-height:1.45;margin-bottom:14px;white-space:pre-wrap}
+  .clickable{cursor:pointer;border-radius:8px;transition:opacity .15s}
+  .clickable:hover{opacity:.82}
+  .taphint{font-size:10.5px;color:var(--text-subdued);font-weight:600;background:var(--tag-bg);padding:2px 8px;border-radius:999px;white-space:nowrap;margin-left:6px}
   .imgrow{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
   .imgrow .thumb{flex:1 1 200px;max-width:320px;background:var(--imgbg);border:1px solid var(--border);border-radius:8px;
     aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:zoom-in}
@@ -175,9 +178,8 @@ function renderNav(){
 function revealBlock(key,a,explain){
   return `<div class="reveal" id="rv-${key}">
     <div class="ans">정답: ${md(a)}</div><div class="exp">${md(explain||'')}</div>
-    <div class="mark"><button class="o${ST.marks[key]==='o'?' on':''}" onclick="setMark('${key}','o')">⭕ 맞춤</button>
-    <button class="x${ST.marks[key]==='x'?' on':''}" onclick="setMark('${key}','x')">❌ 틀림</button></div></div>
-  <div style="margin-top:8px"><button class="btn primary" id="rb-${key}" onclick="toggleReveal('${key}')">정답·해설 보기</button></div>`;
+    <div class="mark"><button class="o${ST.marks[key]==='o'?' on':''}" onclick="event.stopPropagation();setMark('${key}','o')">⭕ 맞춤</button>
+    <button class="x${ST.marks[key]==='x'?' on':''}" onclick="event.stopPropagation();setMark('${key}','x')">❌ 틀림</button></div></div>`;
 }
 function render(){
   applyTheme();renderNav();
@@ -188,8 +190,7 @@ function render(){
   if(it.type==='concept'){
     const c=it.data;
     h+=`<div class="card"><div class="badges"><span class="pill pill-concept">개념문제</span><span class="qno">개념 ${cur+1}/${nConcept()}</span></div>`;
-    h+=`<div class="qtext">${md(c.q)}</div>`;
-    h+=`<textarea class="sa-input" placeholder="키워드로 답해보기 (자가채점용)"></textarea>`;
+    h+=`<div class="qtext clickable" onclick="toggleReveal('${c.id}')">${md(c.q)}<span class="taphint">👆 탭하면 정답</span></div>`;
     h+=revealBlock(c.id,c.a,c.explain);
     h+=`</div>`;
   } else {
@@ -199,8 +200,7 @@ function render(){
     if(c.imgs&&c.imgs.length){h+=`<div class="imgrow">`+c.imgs.map(s=>`<div class="thumb" onclick="openLb('${s}')"><img src="${s}" loading="lazy"></div>`).join('')+`</div>`;}
     c.subs.forEach((s,i)=>{
       const key=c.id+'-'+i;
-      h+=`<div class="sub"><div class="subq"><span class="n">(${i+1})</span>${md(s.q)}</div>`;
-      h+=`<textarea class="sa-input" placeholder="키워드 답"></textarea>`;
+      h+=`<div class="sub"><div class="subq clickable" onclick="toggleReveal('${key}')"><span class="n">(${i+1})</span>${md(s.q)}<span class="taphint">👆 탭</span></div>`;
       h+=revealBlock(key,s.a,s.explain);
       h+=`</div>`;
     });
